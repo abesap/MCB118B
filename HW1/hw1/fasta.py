@@ -24,12 +24,25 @@ def load(filename):
     
     ### ========== TODO : START ========== ###
     fa = []
-    
+    first = True 
     # YOUR CODE HERE
     with open(filename,"r") as f:
+        for x in f:
+            endl = x
+    with open(filename,"r") as f:
         for line in f:
-            pass
-    
+            if line[0]==">":
+                if not first:
+                    fa.append(out)
+                out=[]
+                out.append(line[:-1])
+                out.append("")
+                first = False
+            else:
+                out[1]= out[1]+line[:-1]
+            if line == endl:
+                fa.append(out)
+    fa = [tuple(x) for x in fa]
     return fa
     ### ========== TODO : END ========== ###
 
@@ -53,5 +66,5 @@ def main():
     else:
         raise Exception("%s: error: invalid command" % sys.argv[0])
 
-if __name__ == '__main__':
-    sys.exit(main())
+#if __name__ == '__main__':
+#    sys.exit(main())
