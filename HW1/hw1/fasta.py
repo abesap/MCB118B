@@ -24,18 +24,18 @@ def load(filename):
     
     ### ========== TODO : START ========== ###
     fa = []
-    first = True 
+    first = True #creates flag
     # YOUR CODE HERE
     with open(filename,"r") as f:
         for x in f:
             endl = x
     with open(filename,"r") as f:
         for line in f:
-            if line[0]==">":
-                if not first:
+            if line[0]==">": #if title line
+                if not first: 
                     fa.append(out)
                 out=[]
-                out.append(line[:-1])
+                out.append(line[1:-1])
                 out.append("")
                 first = False
             else:

@@ -40,16 +40,62 @@ def global_align(v, w, match, mismatch, indel):
     # you can modify anything in this TODO block
     
     # initialize DP tables
-    score_array = [[]]
-    
-    
+    nrow=len(v)+1
+    ncol=len(w)+1
+    score_array = [[0 for n in xrange(ncol)] for n in xrange(nrow)]
     # complete DP table
-    
+    for row in xrange(nrow):
+        for col in xrange(ncol):
+            score = 0
+            if col > 0 and row > 0:
+                diag = score_array[row-1][col-1]
+                up = score_array[row][col-1]+indel
+                left = score_array[row-1][col]+indel
+                if v[row-1]==w[col-1]:
+                    diag = diag+match
+                else:
+                    diag= diag+mismatch
+                score = max(diag,up,left)
+                ### enter conditionals
+            else:
+                score= indel*(row+col)
+            score_array[row][col]= score
     
     # traceback to create aligned strings
     aligned_v = ""
     aligned_w = ""
-    
+    last_row = nrow-1
+    last_col = ncol-1
+    v_pos = nrow-1
+    w_pos = ncol-1
+    while last_row>0 or last_col>0:
+        current=score_array[last_row][last_col]
+        diag = score_array[last_row-1][last_col-1]
+        if v[last_row-1]==w[last_col-1]:
+            diag = diag+match
+        else:
+            diag= diag+mismatch
+        up = score_array[last_row-1][last_col]+indel
+        left = score_array[last_row][last_col-1]+indel
+        val= max(diag,up,left)
+        if val == diag:
+            aligned_v = v[v_pos-1]+aligned_v
+            aligned_w = w[w_pos-1]+aligned_w
+            v_pos = v_pos-1
+            w_pos = w_pos-1
+            last_row = last_row-1
+            last_col = last_col-1
+        elif val == up:
+            aligned_w = "-"+aligned_w
+            aligned_v = v[v_pos-1]+aligned_v
+            v_pos-=1
+            last_row = last_row-1
+
+        else:
+            aligned_v = "-"+aligned_v
+            aligned_w = w[w_pos-1]+aligned_w
+            w_pos-=1
+            last_col = last_col-1
     
     # return
     return score_array, aligned_v, aligned_w
@@ -97,5 +143,5 @@ def main():
     else:
         raise Exception("%s: error: invalid command" % sys.argv[0])
 
-if __name__ == '__main__':
-    sys.exit(main())
+#if __name__ == '__main__':
+#   sys.exit(main())
