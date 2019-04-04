@@ -10,6 +10,7 @@ Description : Alignment Library
 
 import sys, fasta
 import numpy as np
+import pandas as pd
 #========================================
 # globals
 
@@ -24,15 +25,46 @@ LEFT = 2
 
 ### ========== TODO : START ========== ###
 # part b.1: add any helper functions here
+def read_matrix_file(matrixfile):
+    """Given a matrix file name return a dictionary of dictionaries for
+        score lookup. 
+    Parameters
+    --------------------
+        matrixfile   -- an fname to be read in to generate
+                        the matrix
+    
+    Return
+    --------------------
+        scoring_matrix  -- DOD's representing scores
 
+    Approach: Create a dictionary of all characters represented
+    for each key store another dictionary of possible values, 
+    keys being the characters (eg A,C,T,G) and values being the mis/match
+    score for that particular potion. 
+    """
+    matrix=[]
+    d = {}
+    dod = {}
+    with open(matrixfile,"r") as f: # Read in Data
+        for line in f:
+            row=line.split()
+            matrix.append(row)      
+    names = matrix[0]
+    for x in range(len(names)): # Loop to create DoDs 
+        row = matrix[x+1]
+        d= {}
+        for y in range(1,len(names)+1):
+            d[names[y-1]]=row[y]
+        dod[row [0]] = d
 
+    return dod
 ### =========== TODO : END =========== ###
 
 
 #========================================
 # main alignment function
 
-def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
+def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global", matrixfile = None):
     """Compute the optimal pairwise alignment of two genomic sequences.
     
     Parameters
@@ -42,6 +74,7 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
         mismatch             -- score for mismatch (default=-2)
         indel                -- score for a gap/indel (default=-3)
         aligntype            -- aligment type, can be local or global
+        matrixfile           -- file containing score data
     
     Return
     --------------------
@@ -51,20 +84,14 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
     """
     
     ### ========== TODO : START ========== ###
-    # you can modify anything in this TODO block
-    #
-    # setup: copy the body your global_align function from last week here
-    #        modify it to also return the maximum alignment score
-    #
-    # part a.1: support local alignment
-    # part b.2: support matrix scoring
-    # initalize DP tble 
+    if matrixfile: #If using a table scoring schema
+        scoring_matrix = read_matrix_file(matrixfile)
     nrow=len(v)+1
     ncol=len(w)+1
+    #Generate blank arrays, chars for parent, 0's for score
     score_array = [[0 for n in xrange(ncol)] for n in xrange(nrow)]
     parent_array = [["" for n in xrange(ncol)] for n in xrange(nrow)]
-    if aligntype=="global":
-
+    if aligntype=="global": 
         nrow=len(v)+1
         ncol=len(w)+1
         score_array = [[0 for n in xrange(ncol)] for n in xrange(nrow)]
@@ -72,28 +99,37 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
         for row in xrange(nrow):
             for col in xrange(ncol):
                 score = 0
+                p = ""
+                #if not on the edge 
                 if col > 0 and row > 0:
+                    #Look at potential parent cells
                     diag = score_array[row-1][col-1]
                     up = score_array[row][col-1]+indel
                     left = score_array[row-1][col]+indel
-                    if v[row-1]==w[col-1]:
-                        diag = diag+match
+                    #If regular scoring algorithim 
+                    if matrixfile == None:
+                        if v[row-1]==w[col-1]:
+                            diag = diag+match
+                        else:
+                            diag= diag+mismatch
+                    #If using matrix to score
                     else:
-                        diag= diag+mismatch
+                        #print(scoring_matrix[v[row-1]][w[col-1]])
+                        diag = diag+int(scoring_matrix[v[row-1]][w[col-1]])
                     score = max(diag,up,left)
+                    #Set parent arrays based on max score
                     if score == diag:
                         p = "d"
                     elif score == up:
                         p = "u"
                     elif score == left:
                         p = "l"
-                    ### enter conditionals
+                # if on the edge
                 else:
                     score= indel*(row+col)
                 score_array[row][col]= score
                 parent_array[row][col] = p
     if aligntype=="local":
-        # complete DP table
         for row in xrange(nrow):
             for col in xrange(ncol):
                 score = 0
@@ -102,10 +138,14 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
                     diag = score_array[row-1][col-1]
                     up = score_array[row][col-1]+indel
                     left = score_array[row-1][col]+indel
-                    if v[row-1]==w[col-1]:
-                        diag = diag+match
+                    if matrixfile == None:
+                        if v[row-1]==w[col-1]:
+                            diag = diag+match
+                        else:
+                            diag= diag+mismatch
                     else:
-                        diag= diag+mismatch
+                        diag = diag+int(scoring_matrix[v[row-1]][w[col-1]])
+                    #Scoring approach now includes 0
                     score = max(diag,up,left,0)
                     if score == diag:
                         p = "d"
@@ -113,13 +153,10 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
                         p = "l"
                     elif score == up:
                         p = "u"
-                    
-                    ### enter conditionals
                 score_array[row][col]= score
                 parent_array[row][col] = p
-    print(np.array(parent_array))
     if aligntype == 'global':
-        a,b,c = globaltraceback(v,w,match,mismatch,indel,score_array)
+        a,b,c = globaltraceback(v,w,match,mismatch,indel,score_array, parent_array)
         return score_array,a,b,c
     if aligntype == 'local':
         a,b,c=localtraceback(v,w,match,mismatch,indel,score_array,parent_array)
@@ -132,13 +169,27 @@ def align(v, w, match=1, mismatch=-2, indel=-3 ,aligntype="global"):
         ### ========== TODO : END ========== ###
 
 def localtraceback(v,w,match, mismatch, indel, scoreArray,parent_array):
-    ""
+    """ Parameters
+    --------------------
+        v, w                 -- strings to align
+        match                -- score for match (default=1)
+        mismatch             -- score for mismatch (default=-2)
+        indel                -- score for a gap/indel (default=-3)
+        scoreArray           -- Array of scores 
+        parent_array         -- Array of pointers back to parent cell 
+    
+    Return
+    --------------------
+        score_array          -- DP table (2D array)
+        aligned_v, aligned_w -- aligned strings
+        max_score            -- alignment score
+    """ 
     maxrow = 0
     maxcol = 0 
     maxval = 0 
     for row in range(len(scoreArray)):
         for col in range(len(scoreArray[row])):
-            if scoreArray[row][col] > maxval:
+            if scoreArray[row][col] > maxval: #finds maximum score to start at
                 maxval = scoreArray[row][col]
                 maxrow = row
                 maxcol = col
@@ -150,72 +201,76 @@ def localtraceback(v,w,match, mismatch, indel, scoreArray,parent_array):
     v_pos = current_row
     w_pos = current_col
     while val > 0 and current_col>0 and current_row>0:
-        print(val)
-        p = parent_array[current_row][current_col]
-        if p == 'd':
-            print("Diag")
-            aligned_v = v[v_pos-1]+aligned_v
+        p = parent_array[current_row][current_col] #starts at maximum value
+        if p == 'd': #diagonal parent
+            aligned_v = v[v_pos-1]+aligned_v #adds corresponding character from strings (match or mismatch)
             aligned_w = w[w_pos-1]+aligned_w
             v_pos = v_pos-1
             w_pos = w_pos-1
             current_row = current_row-1
             current_col = current_col-1
-        elif p == 'u':
-            print("Up")
+        elif p == 'l': #left parent
             aligned_w = "-"+aligned_w
             aligned_v = v[v_pos-1]+aligned_v
             v_pos-=1
             current_row = current_row-1
             
 
-        elif p == 'l':
-            print("left")
+        elif p == 'u': #upper parent
             aligned_v = "-"+aligned_v
             aligned_w = w[w_pos-1]+aligned_w
             w_pos-=1
             current_col = current_col-1
-        elif val ==0: 
-            print("Breaking")
+        elif val ==0: #when alignment score is zero, stop
             break 
         val = scoreArray[current_row][current_col]
     return aligned_v, aligned_w, maxval
 
-def globaltraceback(v,x,match,mismatch, indel, scoreArray):
+def globaltraceback(v,w,match,mismatch, indel, score_array,parent_array):
+    """ Parameters
+    --------------------
+        v, w                 -- strings to align
+        match                -- score for match (default=1)
+        mismatch             -- score for mismatch (default=-2)
+        indel                -- score for a gap/indel (default=-3)
+        scoreArray           -- Array of scores 
+        parent_array         -- Array of pointers back to parent cell 
+    
+    Return
+    --------------------
+        score_array          -- DP table (2D array)
+        aligned_v, aligned_w -- aligned strings
+        max_score            -- alignment score
+    """ 
     aligned_v = ""
     aligned_w = ""
-    last_row = nrow-1
-    last_col = ncol-1
+    nrow = len(v)
+    ncol = len(w)
+    current_row = nrow-1
+    current_col = ncol-1
     v_pos = nrow-1
     w_pos = ncol-1
-    maxval = scoreArray[last_row][last_col]
-    while last_row>0 or last_col>0:
-        current=score_array[last_row][last_col]
-        diag = score_array[last_row-1][last_col-1]
-        if v[last_row-1]==w[last_col-1]:
-            diag = val+match
-        else:
-            diag= val+mismatch
-        up = scoreArray[last_row-1][last_col]+indel
-        left = scoreArray[last_row][last_col-1]+indel
-        val= max(diag,up,left)
-        if val == diag:
+    maxval = score_array[current_row][current_col]
+    while current_col>0 and current_row>0: #while in table; stop at top left corner
+        p = parent_array[current_row][current_col]
+        if p == 'd': #diagonal parent, adds corresponding letters from strings (match or mismatch)
             aligned_v = v[v_pos-1]+aligned_v
             aligned_w = w[w_pos-1]+aligned_w
             v_pos = v_pos-1
             w_pos = w_pos-1
-            last_row = last_row-1
-            last_col = last_col-1
-        elif val == up:
+            current_row = current_row-1
+            current_col = current_col-1
+        elif p == 'l': #left parent, adds gap
             aligned_w = "-"+aligned_w
             aligned_v = v[v_pos-1]+aligned_v
             v_pos-=1
-            last_row = last_row-1
-
-        else:
+            current_row = current_row-1
+        else: #upper parent, adds gap
             aligned_v = "-"+aligned_v
             aligned_w = w[w_pos-1]+aligned_w
             w_pos-=1
-            last_col = last_col-1
+            current_col = current_col-1
+
     
     # return
     return  aligned_v, aligned_w, maxval
@@ -274,7 +329,7 @@ def main():
             mismatch = int(toks[1])
         else:                  # matrix
             ### ========== TODO : START ========== ###
-            # part b.3: parse sys.argv[2]
+            matrixfile=sys.argv[2]
             pass
             ### =========== TODO : END =========== ###
         
@@ -294,7 +349,7 @@ def main():
         # part b.3: support matrix scoring
         
         score_array, aligned_v, aligned_w, max_score = \
-            align(v, w, match, mismatch, indel, aligntype)
+            align(v, w, match, mismatch, indel, aligntype,matrixfile)
         ### =========== TODO : END =========== ###
         
         # print aligned strings
