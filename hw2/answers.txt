@@ -1,0 +1,18 @@
+Q1;This correponds to an E value of zero, becuase this would mean that the calulated 
+score for a hit is significantly greater than all randomly shuffled values
+caluclated scores. 
+
+Q2: Instead of finding the absolute maximum and comparing our un-shuffled scores to 
+this, we could sort our randomzied list and select the most extreme values. The number
+of values that we selected would be dictated by the E-value threshold. From here we would
+find the minimum extreme value and compare our un-shuffled scores to this. Select alignments 
+that had scores above the minimum extreme threshold. 
+
+Q3: gene1-PA (polymerase acidic protein)
+    gene2-HA (hemagglutinin)
+    gene3- NP (nucleoprotein)
+    gene4- NA (neuraminidase)
+    Since the South African Tern strain, >ABI84973, was the only one present in all four genes
+    it seems reasonable to conclude that this is likely the most similar to the pandemic flu strain. 
+
+ 
