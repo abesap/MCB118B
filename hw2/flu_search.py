@@ -53,7 +53,7 @@ def run_search(query_filename, db_filename,
 #========================================
 # main
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     # fixed alignment and search parameters
     matrix = pam250
     gap_open = -10
@@ -67,3 +67,4 @@ if __name__ == "__main__":
     # search
     run_search(query_filename, db_filename, 
                matrix, gap_open, gap_length, num_reps)
+"""
