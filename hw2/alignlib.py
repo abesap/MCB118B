@@ -246,8 +246,8 @@ def globaltraceback(v,w,match,mismatch, indel, score_array,parent_array):
     aligned_w = ""
     nrow = len(v)
     ncol = len(w)
-    current_row = nrow-1
-    current_col = ncol-1
+    current_row = nrow
+    current_col = ncol
     v_pos = nrow-1
     w_pos = ncol-1
     maxval = score_array[current_row][current_col]
