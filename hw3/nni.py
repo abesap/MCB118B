@@ -29,20 +29,31 @@ def get_all_rerootings(tree):
     else:
         left =left_to_root(tree)
         right = right_to_root (tree)
-        ll = get_all_rerootings(left)
-        rr = get_all_rerootings(right)
-        return [tree, left, right, ll, rr]
+        toreturn = [tree]
+        [toreturn.append(x) for x in left]
+        [toreturn.append(x) for x in right]
+        return toreturn
 def left_to_root(tree):
     """" Inputs a Tree
     sets the nearest left node to root"""
+    if len(tree) == 0: #if tree is empty
+        return 
+    if tl.is_leaf(tree[1]): #if left is leaf
+        return 
     root, left, right=tree
     loot , lleft, light = left
     new_tree = (loot, lleft, (root,light,right))
-    return new_tree
+    return new_tree, left_to_root(new_tree)#, right_to_root(new_tree)]
 def right_to_root(tree):
     """" Inputs a Tree
     sets the nearest left node to root"""
+    if len(tree) == 0: #empty
+        return 
+    if tl.is_leaf(tree[2]): #right is leaf
+        return  
     root, left, right=tree
+    if len(right) == 0:
+        return []
     right_root, right_left, right_right = right
     new_tree = (right_root, (root, left, right_left) ,right_right)
-    return new_tree
+    return new_tree, right_to_root(new_tree)
