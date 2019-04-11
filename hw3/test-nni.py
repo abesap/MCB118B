@@ -51,10 +51,10 @@ class NNITests(unittest.TestCase):
         # we have filled out one case for you
         
         # case 0 -- let newick = "(A,(B,C))"
-        helper("(A,(B,C))", [])
+        #helper("(A,(B,C))", [])
         # case 1 -- let newick = "((A,B),(C,D))"
-        helper("((A,B),(C,D))",
-               ["((A,C),(B,D))", "((A,D),(C,B))"])
+        #helper("((A,B),(C,D))",
+            #   ["((A,C),(B,D))", "((A,D),(C,B))"])
         # case 2 -- let newick = "((A,B),(C,(D,E)))"
         helper("((A,B),(C,(D,E)))", 
             ["((A,C),(B,(D,E)))", "((A,(D,E)),(C,B))"])
