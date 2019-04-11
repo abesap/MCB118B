@@ -246,14 +246,14 @@ def globaltraceback(v,w,match,mismatch, indel, score_array,parent_array):
     aligned_w = ""
     nrow = len(v)
     ncol = len(w)
-    current_row = nrow
-    current_col = ncol
-    v_pos = nrow-1
-    w_pos = ncol-1
+    current_row = nrow-1
+    current_col = ncol-1
+    v_pos = nrow
+    w_pos = ncol
     maxval = score_array[current_row][current_col]
     while current_col>0 and current_row>0: #while in table; stop at top left corner
         p = parent_array[current_row][current_col]
-        if p == 'd': #diagonal parent, adds corresponding letters from strings (match or mismatch)
+	if p == 'd': #diagonal parent, adds corresponding letters from strings (match or mismatch)
             aligned_v = v[v_pos-1]+aligned_v
             aligned_w = w[w_pos-1]+aligned_w
             v_pos = v_pos-1
@@ -370,5 +370,5 @@ def main():
     else:
         raise Exception("%s: error: invalid command" % sys.argv[0])
 
-if __name__ == '__main__':
-    sys.exit(main())
+#if __name__ == '__main__':
+#    sys.exit(main())
