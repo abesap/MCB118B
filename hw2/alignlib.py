@@ -370,5 +370,5 @@ def main():
     else:
         raise Exception("%s: error: invalid command" % sys.argv[0])
 
-#if __name__ == '__main__':
-#    sys.exit(main())
+if __name__ == '__main__':
+    sys.exit(main())
