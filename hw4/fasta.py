@@ -1,7 +1,7 @@
 """
-Author      : Matina Donaldson-Matasci, Yi-Chieh Wu, Eliot Bush
+Author      : Yi-Chieh Wu (adapted from Eliot Bush)
 Class       : HMC MCB 118b
-Date        : 2019 Mar 12
+Date        : 2018 Feb 15
 Description : Fasta module
 """
 
@@ -11,40 +11,46 @@ import sys
 # functions
 
 def load(filename):
-    """Load fasta or multifasta file.
+    """Load fasta or multifasta.
     
     Parameters
     --------------------
-      fn -- name of file containing sequences in fasta format
+      fn -- filename of BLAST hits
     
     Return
     --------------------
-      fa -- list of tuples (name, sequence)
+      fa -- list of tuples (key, seq)
     """
     
-    ### ========== TODO : START ========== ###
     fa = []
-    first = True #creates flag
-    # YOUR CODE HERE
+    
     with open(filename,"r") as f:
-        for x in f:
-            endl = x
-    with open(filename,"r") as f:
+        header = None
         for line in f:
-            if line[0]==">": #if title line
-                if not first: 
-                    fa.append(out)
-                out=[]
-                out.append(line[1:-1])
-                out.append("")
-                first = False
-            else:
-                out[1]= out[1]+line[:-1]
-            if line == endl:
-                fa.append(out)
-    fa = [tuple(x) for x in fa]
+            # strip whitespace from right (e.g. strip newline)
+            line = line.rstrip()
+            
+            # skip empty lines
+            if line == "":
+                continue
+            
+            if line[0] == ">": # header
+                if header is not None:
+                    # put together previous (key,seq)
+                    seq = "".join(temp_seq)
+                    fa.append((header, seq))
+                
+                # reset
+                header = line[1:]
+                temp_seq = []
+            else :              # seq
+                temp_seq.append(line)
+        
+        # put together last (key,seq)
+        seq = "".join(temp_seq)
+        fa.append((header, seq))
+    
     return fa
-    ### ========== TODO : END ========== ###
 
 
 #========================================
@@ -66,5 +72,5 @@ def main():
     else:
         raise Exception("%s: error: invalid command" % sys.argv[0])
 
-#if __name__ == '__main__':
-#    sys.exit(main())
+if __name__ == '__main__':
+    sys.exit(main())
