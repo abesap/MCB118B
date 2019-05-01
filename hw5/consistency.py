@@ -95,10 +95,10 @@ def plot_parsimony_consistency(tree, mu, seq_lengths, sample_size, reps):
 def main():
     seq_lengths = [10,30,50,100,500,1000,5000]
     LONGBRANCH = (("",0),(("",0.01), (("A",0.01),(),()), (("B",0.4),(),())),(("",0.01), (("C",0.01),(),()), (("D",0.4),(),())))
-    mu = [.001,0.05,0.01,0.05,0.1,0.4]
+    mu = [.00001,0.0005,0.0001,0.005,0.01,0.04,.1]
     increase_seq = False 
     for x in mu: 
-        num_reps = 5
+        num_reps = 100
         vals = plot_parsimony_consistency(LONGBRANCH, x, seq_lengths, 10, num_reps)
         if vals[-1] is not max(vals) and vals[-1] != num_reps:#If inconsistent
             break
